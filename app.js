@@ -28,6 +28,10 @@ app.post('/fetchArtistData', async (req, res) => {
     }
 });
 
+app.get('/', async (req, res) => {
+    res.send('hello')
+})
+
 
 // קבלת בקשה עם URL ייחודי המכיל את הטוקן
 app.post('/youtubeapi', (req, res) => {
@@ -57,7 +61,8 @@ app.post('/youtubeapi', (req, res) => {
     }
 });
 
+
 // הפעלת השרת
-app.listen(3000, () => {
-    console.log('Server running on port 3000');
-});
+app.listen(7000, process.env.HOST, () => {
+    console.log(`Server is running on http://${process.env.HOST}:7000`);
+  });
