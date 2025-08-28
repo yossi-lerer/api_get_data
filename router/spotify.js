@@ -43,6 +43,25 @@ async function analyzeTitle(title) {
   }
 }
 
+async function analyzekeyword(title) {
+  try {
+    const response = await openai.chat.completions.create({
+      model: 'gpt-4o',
+      messages: [{ role: 'user', content:  `Extract the main keywords from the title: "${title}". Focus on identifying only the essential words that describe the main topic or theme of the title, ignoring any filler words.` }],
+      max_tokens: 60
+    });
+
+    if (response.choices && response.choices.length > 0) {
+      return response.choices[0].message.content.trim();
+    } else {
+      return 'Unknown';
+    }
+  } catch (error) {
+    console.error('Error analyzing title:', error);
+    return 'Unknown';
+  }
+}
+
 // פונקציה לקבלת נתוני אמן
 async function fetchArtistData(artistName, maxSongs, maxArtists) {
   try {
@@ -87,6 +106,7 @@ async function fetchArtistData(artistName, maxSongs, maxArtists) {
         if (songCount >= maxSongs) break;
 
         const analysis = await analyzeTitle(track.name);
+        const keyword = await analyzekeyword(track.name);
         console.log(track)
 
 await base(SONGS_TABLE_NAME).create([
@@ -100,6 +120,7 @@ await base(SONGS_TABLE_NAME).create([
       'Popularity': track.popularity,
       'Artist': [artistRecordId],
       'Title Analysis': analysis,
+      'Keywords': keyword,
       'Artists': track.artists.map(artist => artist.name).join(', '), // שמות כל האמנים
       'Available Markets': track.available_markets.join(', '), // שווקים זמינים
       'Disc Number': track.disc_number.toString(), // מספר דיסק
@@ -172,6 +193,7 @@ async function fetchArtistDataById(artistId, maxSongs) {
         if (songCount >= maxSongs) break;
 
         const analysis = await analyzeTitle(track.name);
+        const keyword = await analyzekeyword(track.name);
 
         await base(SONGS_TABLE_NAME).create([
           {
@@ -184,6 +206,7 @@ async function fetchArtistDataById(artistId, maxSongs) {
               'Popularity': track.popularity,
               'Artist': [artistRecordId],
               'Title Analysis': analysis,
+              'Keywords': keyword,
               'Artists': track.artists.map(artist => artist.name).join(', '), // שמות כל האמנים
               'Available Markets': track.available_markets.join(', '), // שווקים זמינים
               'Disc Number': track.disc_number.toString(), // מספר דיסק
@@ -214,3 +237,4 @@ const maxArtists = 3; // מספר האמנים הדומים לחילוץ
 module.exports = {
   fetchArtistData
 }
+
